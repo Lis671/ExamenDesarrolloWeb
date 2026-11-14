@@ -72,6 +72,6 @@ window.api = {
   },
 
   stats() {
-    return request("/stats");
+    return request("/reports/stats");
   },
 };
