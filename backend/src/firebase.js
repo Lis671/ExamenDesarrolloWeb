@@ -22,7 +22,7 @@ if (!admin.apps.length) {
       privateKey: FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
     }),
     storageBucket:
-      FIREBASE_STORAGE_BUCKET || `${FIREBASE_PROJECT_ID}.appspot.com`,
+      FIREBASE_STORAGE_BUCKET || `${FIREBASE_PROJECT_ID}.firebasestorage.app`,
   });
 }
 

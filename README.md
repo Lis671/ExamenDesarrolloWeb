@@ -46,10 +46,15 @@ ExamenDesarolloWeb/
 
 ## 1. Configurar Firebase
 
+> **Nota 2026:** Cloud Storage para Firebase exige el plan **Blaze** (pago por uso), que incluye
+> consumo sin costo (5 GB). Al activarlo, configure una **alerta de presupuesto** en Google Cloud
+> para evitar cargos.
+
 1. Cree un proyecto en <https://console.firebase.google.com>.
-2. **Firestore Database** → Crear base de datos (modo producción).
-3. **Storage** → Comenzar (necesario para las fotografías).
-4. **Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada**. Se descarga un archivo JSON.
+2. Cambie el proyecto al plan **Blaze** (Configuración → Uso y facturación) y cree una alerta de presupuesto.
+3. **Firestore Database** → Crear base de datos (modo producción, región `us-central1`).
+4. **Storage** → Comenzar (región `us-central1`). El bucket será `su-proyecto.firebasestorage.app`.
+5. **Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada**. Se descarga un archivo JSON.
 5. Use los datos de ese JSON en el `.env` del backend:
    - `project_id` → `FIREBASE_PROJECT_ID`
    - `client_email` → `FIREBASE_CLIENT_EMAIL`
