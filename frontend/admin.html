@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel Administrativo | Atención Ciudadana - Guastatoya</title>
+    <meta
+      name="description"
+      content="Panel de administración municipal para revisar quejas y reportes ciudadanos."
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container bar">
+        <a class="brand" href="index.html" aria-label="Inicio">
+          <span class="logo" aria-hidden="true">&#127974;</span>
+          <span>
+            Municipalidad de Guastatoya
+            <small>Portal de Atención Ciudadana</small>
+          </span>
+        </a>
+        <nav class="nav" aria-label="Navegación principal">
+          <a href="index.html">Registrar queja</a>
+          <a href="admin.html" class="active">Panel administrativo</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="page-title">
+        <span class="eyebrow">Serie I &middot; Panel de Administración Municipal</span>
+        <h1>Panel de reportes ciudadanos</h1>
+        <p>Revise, filtre y dé seguimiento a las quejas registradas por los ciudadanos.</p>
+      </section>
+
+      <div id="admin-alert" class="alert error" role="alert"></div>
+
+      <section class="stats" aria-label="Indicadores">
+        <div class="stat total">
+          <div class="label">Total de reportes</div>
+          <div class="value" id="stat-total">—</div>
+          <div class="sub">Registros en el sistema</div>
+        </div>
+        <div class="stat pendiente">
+          <div class="label">Pendientes</div>
+          <div class="value" id="stat-pendiente">—</div>
+          <div class="sub">Sin atender</div>
+        </div>
+        <div class="stat proceso">
+          <div class="label">En proceso</div>
+          <div class="value" id="stat-proceso">—</div>
+          <div class="sub">En revisión</div>
+        </div>
+        <div class="stat resuelto">
+          <div class="label">Resueltos</div>
+          <div class="value" id="stat-resuelto">—</div>
+          <div class="sub">Atendidos</div>
+        </div>
+      </section>
+
+      <section class="filters" aria-label="Filtros de búsqueda">
+        <div class="field">
+          <label for="f-q">Buscar</label>
+          <input
+            type="search"
+            id="f-q"
+            placeholder="Folio, nombre, ubicación…"
+            autocomplete="off"
+          />
+        </div>
+        <div class="field">
+          <label for="f-estado">Estado</label>
+          <select id="f-estado">
+            <option value="">Todos</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="en_proceso">En proceso</option>
+            <option value="resuelto">Resuelto</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-categoria">Categoría</label>
+          <select id="f-categoria">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-desde">Desde</label>
+          <input type="date" id="f-desde" />
+        </div>
+        <div class="field">
+          <label for="f-hasta">Hasta</label>
+          <input type="date" id="f-hasta" />
+        </div>
+        <div class="field">
+          <button type="button" class="btn secondary" id="clear-filters">
+            Limpiar
+          </button>
+        </div>
+      </section>
+
+      <div id="report-list" class="report-list" aria-live="polite"></div>
+
+      <div class="mt-2"></div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container bar">
+        <span>© <span id="year"></span> Municipalidad de Guastatoya — Atención Ciudadana</span>
+        <span>Universidad Mariano Gálvez &middot; Desarrollo Web</span>
+      </div>
+    </footer>
+
+    <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal">
+        <div class="modal-head">
+          <h2 id="modal-title">Detalle del reporte</h2>
+          <button type="button" class="modal-close" id="modal-close" aria-label="Cerrar">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+      </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/admin.js"></script>
+  </body>
+</html>

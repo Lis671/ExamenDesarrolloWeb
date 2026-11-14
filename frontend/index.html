@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portal Ciudadano | Atención de Quejas - Municipalidad de Guastatoya</title>
+    <meta
+      name="description"
+      content="Portal público para registrar quejas y reportes ciudadanos con fotografía."
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container bar">
+        <a class="brand" href="index.html" aria-label="Inicio">
+          <span class="logo" aria-hidden="true">&#127974;</span>
+          <span>
+            Municipalidad de Guastatoya
+            <small>Portal de Atención Ciudadana</small>
+          </span>
+        </a>
+        <nav class="nav" aria-label="Navegación principal">
+          <a href="index.html" class="active">Registrar queja</a>
+          <a href="admin.html">Panel administrativo</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container">
+          <span class="eyebrow">Serie I &middot; Portal público</span>
+          <h1>Reporta un problema en tu comunidad</h1>
+          <p>
+            Ingresa tu queja o reporte, adjunta una fotografía del lugar y envíala.
+            Recibirás un número de folio para dar seguimiento a tu solicitud.
+          </p>
+        </div>
+      </section>
+
+      <div class="container layout">
+        <section class="card" aria-labelledby="form-title">
+          <div class="card-head" id="form-head">
+            <span class="icon" aria-hidden="true">&#128221;</span>
+            <div>
+              <h2 id="form-title">Nuevo reporte ciudadano</h2>
+              <p>Todos los campos marcados con <strong>*</strong> son obligatorios.</p>
+            </div>
+          </div>
+
+          <div id="form-alert" class="alert error" role="alert" aria-live="assertive"></div>
+
+          <form id="report-form" novalidate>
+            <div class="form-grid">
+              <div class="field" data-field="nombre">
+                <label for="nombre">Nombre completo <span class="req">*</span></label>
+                <input
+                  type="text"
+                  id="nombre"
+                  name="nombre"
+                  placeholder="Ej. María López"
+                  maxlength="80"
+                  autocomplete="name"
+                />
+                <span class="error-text" data-error="nombre"></span>
+              </div>
+
+              <div class="field" data-field="correo">
+                <label for="correo">Correo electrónico <span class="req">*</span></label>
+                <input
+                  type="email"
+                  id="correo"
+                  name="correo"
+                  placeholder="correo@ejemplo.com"
+                  autocomplete="email"
+                />
+                <span class="error-text" data-error="correo"></span>
+              </div>
+
+              <div class="field" data-field="telefono">
+                <label for="telefono">Teléfono (opcional)</label>
+                <input
+                  type="tel"
+                  id="telefono"
+                  name="telefono"
+                  placeholder="Ej. 5555 5555"
+                  autocomplete="tel"
+                />
+                <span class="error-text" data-error="telefono"></span>
+              </div>
+
+              <div class="field" data-field="categoria">
+                <label for="categoria">Categoría del problema <span class="req">*</span></label>
+                <select id="categoria" name="categoria">
+                  <option value="">Seleccione una categoría…</option>
+                </select>
+                <span class="error-text" data-error="categoria"></span>
+              </div>
+
+              <div class="field full" data-field="ubicacion">
+                <label for="ubicacion">Ubicación del problema <span class="req">*</span></label>
+                <input
+                  type="text"
+                  id="ubicacion"
+                  name="ubicacion"
+                  placeholder="Ej. 4a. calle, zona 1, frente al parque central"
+                  maxlength="150"
+                />
+                <span class="error-text" data-error="ubicacion"></span>
+              </div>
+
+              <div class="field full" data-field="descripcion">
+                <label for="descripcion">Descripción del problema <span class="req">*</span></label>
+                <textarea
+                  id="descripcion"
+                  name="descripcion"
+                  placeholder="Describa con detalle lo que ocurre (mínimo 10 caracteres)."
+                  maxlength="1000"
+                ></textarea>
+                <span class="hint"> <span id="desc-count">0</span>/1000 caracteres. </span>
+                <span class="error-text" data-error="descripcion"></span>
+              </div>
+
+              <div class="field full" data-field="foto">
+                <label>Fotografía del problema <span class="req">*</span></label>
+                <label class="dropzone" id="dropzone" for="foto">
+                  <span class="dz-icon" aria-hidden="true">&#128247;</span>
+                  <strong>Haga clic para seleccionar una imagen</strong>
+                  <span>o arrástrela aquí &middot; JPG, PNG o WEBP &middot; máximo 5 MB</span>
+                  <input
+                    type="file"
+                    id="foto"
+                    name="foto"
+                    accept="image/jpeg,image/png,image/webp"
+                    class="sr-only"
+                  />
+                </label>
+                <div class="preview" id="preview">
+                  <img id="preview-img" alt="Vista previa de la fotografía" />
+                  <div class="info">
+                    <strong id="preview-name"></strong>
+                    <span id="preview-size"></span>
+                  </div>
+                  <button type="button" class="link-btn" id="remove-photo">
+                    Quitar
+                  </button>
+                </div>
+                <span class="error-text" data-error="foto"></span>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn" id="submit-btn">
+                <span>Enviar reporte</span>
+              </button>
+              <button type="reset" class="btn ghost" id="reset-btn">
+                Limpiar formulario
+              </button>
+            </div>
+          </form>
+
+          <div class="success-panel" id="success-panel" aria-live="polite">
+            <div class="check" aria-hidden="true">&#10003;</div>
+            <h2>¡Reporte registrado!</h2>
+            <p class="text-muted">
+              Su queja fue recibida y será revisada por el personal municipal.
+              Guarde su folio para dar seguimiento.
+            </p>
+            <div class="folio-box">
+              <span>Número de folio</span>
+              <strong id="success-folio">—</strong>
+            </div>
+            <div class="form-actions" style="justify-content: center">
+              <button type="button" class="btn" id="new-report-btn">
+                Registrar otro reporte
+              </button>
+              <a class="btn secondary" href="admin.html">Ir al panel administrativo</a>
+            </div>
+          </div>
+        </section>
+
+        <aside class="sidebar">
+          <section class="side-card">
+            <h3><span aria-hidden="true">&#128203;</span> ¿Cómo funciona?</h3>
+            <ol class="steps">
+              <li><strong>Complete el formulario</strong> con sus datos y la descripción.</li>
+              <li><strong>Adjunte una fotografía</strong> clara del problema.</li>
+              <li><strong>Envíe el reporte</strong> y reciba su folio de confirmación.</li>
+              <li><strong>El municipio revisa</strong> y actualiza el estado de su queja.</li>
+            </ol>
+          </section>
+
+          <section class="side-card">
+            <h3><span aria-hidden="true">&#128222;</span> Contacto municipal</h3>
+            <ul class="contact-list">
+              <li><span>Oficina</span><strong>Atención Ciudadana</strong></li>
+              <li><span>Teléfono</span><strong>7942-0000</strong></li>
+              <li><span>Horario</span><strong>Lun a Vie, 8:00 - 16:00</strong></li>
+              <li><span>Dirección</span><strong>Palacio Municipal, Guastatoya</strong></li>
+            </ul>
+          </section>
+
+          <section class="side-card">
+            <h3><span aria-hidden="true">&#9888;</span> Emergencias</h3>
+            <p class="text-muted" style="margin: 0; font-size: 0.9rem">
+              Para emergencias fuera del horario de oficina, comuníquese con los
+              servicios de emergencia (110 / 122 / 123). Este portal es para
+              reportes no urgentes.
+            </p>
+          </section>
+        </aside>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container bar">
+        <span>© <span id="year"></span> Municipalidad de Guastatoya — Atención Ciudadana</span>
+        <span>Universidad Mariano Gálvez &middot; Desarrollo Web</span>
+      </div>
+    </footer>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/form.js"></script>
+  </body>
+</html>
