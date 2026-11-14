@@ -10,12 +10,14 @@ export const CATEGORIAS = [
 
 export const ESTADOS = ["pendiente", "en_proceso", "resuelto"];
 
-export const MAX_FILE_SIZE = 5 * 1024 * 1024;
+// Límites para las imágenes guardadas como base64 en Firestore.
+// Un documento de Firestore no puede superar 1 MiB.
+export const MAX_PHOTO_CHARS = 700000;
+export const MAX_THUMB_CHARS = 60000;
+export const MAX_TOTAL_PHOTO_CHARS = 900000;
 
-export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-
-export const EXT_BY_MIME = {
-  "image/jpeg": ".jpg",
-  "image/png": ".png",
-  "image/webp": ".webp",
-};
+export const ALLOWED_DATA_PREFIXES = [
+  "data:image/jpeg;base64,",
+  "data:image/png;base64,",
+  "data:image/webp;base64,",
+];

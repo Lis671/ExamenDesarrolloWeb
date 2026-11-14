@@ -27,8 +27,9 @@ app.use(
   })
 );
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Límite ampliado porque las imágenes viajan como base64 en el JSON.
+app.use(express.json({ limit: "8mb" }));
+app.use(express.urlencoded({ extended: true, limit: "8mb" }));
 
 app.get(["/", "/health", "/api/health"], (req, res) => {
   res.json({ ok: true, message: "API de atención ciudadana en línea." });
@@ -48,12 +49,17 @@ app.use((req, res) => {
 });
 
 app.use((error, req, res, next) => {
-  if (error.name === "MulterError") {
-    const message =
-      error.code === "LIMIT_FILE_SIZE"
-        ? "La imagen supera el tamaño máximo permitido (5 MB)."
-        : `Error al subir el archivo: ${error.message}`;
-    return res.status(413).json({ ok: false, message });
+  if (error.type === "entity.too.large") {
+    return res.status(413).json({
+      ok: false,
+      message: "El contenido enviado es demasiado grande.",
+    });
+  }
+
+  if (error.type === "entity.parse.failed") {
+    return res
+      .status(400)
+      .json({ ok: false, message: "El cuerpo de la solicitud no es válido." });
   }
 
   const status = error.status || 500;

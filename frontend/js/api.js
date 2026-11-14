@@ -47,8 +47,12 @@ window.api = {
     return request("/meta");
   },
 
-  createReport(formData) {
-    return request("/reports", { method: "POST", body: formData });
+  createReport(payload) {
+    return request("/reports", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
   },
 
   getReports(filters) {

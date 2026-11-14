@@ -1,9 +1,6 @@
 import { Router } from "express";
-import { randomUUID } from "node:crypto";
-import admin, { db, bucket } from "../firebase.js";
-import { upload } from "../middleware/upload.js";
+import admin, { db } from "../firebase.js";
 import { validateReport, validateStatus } from "../middleware/validate.js";
-import { CATEGORIAS, ESTADOS, EXT_BY_MIME } from "../constants.js";
 
 const router = Router();
 const COLLECTION = "reports";
@@ -15,7 +12,7 @@ function toIso(value) {
   return null;
 }
 
-function toReport(doc) {
+function baseReport(doc) {
   const data = doc.data();
   return {
     id: doc.id,
@@ -26,11 +23,18 @@ function toReport(doc) {
     categoria: data.categoria,
     ubicacion: data.ubicacion,
     descripcion: data.descripcion,
-    fotoUrl: data.fotoUrl || "",
     estado: data.estado,
     createdAt: toIso(data.createdAt),
     updatedAt: toIso(data.updatedAt),
   };
+}
+
+function toListReport(doc) {
+  return { ...baseReport(doc), fotoUrl: doc.data().fotoThumb || "" };
+}
+
+function toDetailReport(doc) {
+  return { ...baseReport(doc), fotoUrl: doc.data().foto || "" };
 }
 
 async function nextFolio() {
@@ -44,27 +48,9 @@ async function nextFolio() {
   });
 }
 
-async function uploadPhoto(file, folio) {
-  const ext = EXT_BY_MIME[file.mimetype] || ".jpg";
-  const destination = `reports/${folio}/foto-${randomUUID()}${ext}`;
-  const blob = bucket.file(destination);
-
-  await blob.save(file.buffer, {
-    resumable: false,
-    metadata: { contentType: file.mimetype },
-  });
-
-  const [fotoUrl] = await blob.getSignedUrl({
-    action: "read",
-    expires: "03-09-2491",
-  });
-
-  return { fotoPath: destination, fotoUrl };
-}
-
-router.post("/", upload.single("foto"), async (req, res, next) => {
+router.post("/", async (req, res, next) => {
   try {
-    const { valid, errors, values } = validateReport(req.body, req.file);
+    const { valid, errors, values } = validateReport(req.body);
     if (!valid) {
       return res.status(400).json({
         ok: false,
@@ -74,16 +60,12 @@ router.post("/", upload.single("foto"), async (req, res, next) => {
     }
 
     const folio = await nextFolio();
-    const { fotoPath, fotoUrl } = await uploadPhoto(req.file, folio);
-
     const now = admin.firestore.FieldValue.serverTimestamp();
     const docRef = db.collection(COLLECTION).doc();
 
     await docRef.set({
       folio,
       ...values,
-      fotoPath,
-      fotoUrl,
       estado: "pendiente",
       createdAt: now,
       updatedAt: now,
@@ -108,7 +90,7 @@ router.get("/", async (req, res, next) => {
       .orderBy("createdAt", "desc")
       .get();
 
-    let reports = snapshot.docs.map(toReport);
+    let reports = snapshot.docs.map(toListReport);
     const search = (q || "").trim().toLowerCase();
 
     if (estado) reports = reports.filter((r) => r.estado === estado);
@@ -135,20 +117,22 @@ router.get("/", async (req, res, next) => {
 router.get("/stats", async (req, res, next) => {
   try {
     const snapshot = await db.collection(COLLECTION).get();
-    const reports = snapshot.docs.map(toReport);
 
+    let total = 0;
     const porEstado = { pendiente: 0, en_proceso: 0, resuelto: 0 };
     const porCategoria = {};
 
-    for (const report of reports) {
-      if (porEstado[report.estado] !== undefined) porEstado[report.estado] += 1;
-      porCategoria[report.categoria] = (porCategoria[report.categoria] || 0) + 1;
-    }
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      total += 1;
+      if (porEstado[data.estado] !== undefined) porEstado[data.estado] += 1;
+      porCategoria[data.categoria] = (porCategoria[data.categoria] || 0) + 1;
+    });
 
     return res.json({
       ok: true,
       data: {
-        total: reports.length,
+        total,
         pendiente: porEstado.pendiente,
         en_proceso: porEstado.en_proceso,
         resuelto: porEstado.resuelto,
@@ -168,7 +152,7 @@ router.get("/:id", async (req, res, next) => {
         .status(404)
         .json({ ok: false, message: "Reporte no encontrado." });
     }
-    return res.json({ ok: true, data: toReport(doc) });
+    return res.json({ ok: true, data: toDetailReport(doc) });
   } catch (error) {
     next(error);
   }

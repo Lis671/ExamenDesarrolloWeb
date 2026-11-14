@@ -13,6 +13,9 @@
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
   const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+  // Límites para que la imagen comprimida quepa en un documento de Firestore (1 MiB).
+  const MAX_FULL_CHARS = 650000;
+  const MAX_THUMB_DIMENSION = 320;
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const PHONE_REGEX = /^[0-9+\-\s()]{7,20}$/;
 
@@ -173,6 +176,67 @@
     descCount.textContent = descripcion.value.length;
   });
 
+  // -------------------- Compresión de imagen --------------------
+  function loadImage(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("No se pudo leer la imagen seleccionada."));
+      };
+      img.src = url;
+    });
+  }
+
+  function renderToDataUrl(img, maxDimension, quality) {
+    const scale = Math.min(
+      1,
+      maxDimension / Math.max(img.width, img.height)
+    );
+    const width = Math.max(1, Math.round(img.width * scale));
+    const height = Math.max(1, Math.round(img.height * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(img, 0, 0, width, height);
+
+    return canvas.toDataURL("image/jpeg", quality);
+  }
+
+  async function buildImagePayload(file) {
+    const img = await loadImage(file);
+
+    let maxDimension = 1280;
+    let quality = 0.72;
+    let full = renderToDataUrl(img, maxDimension, quality);
+
+    while (full.length > MAX_FULL_CHARS) {
+      maxDimension = Math.round(maxDimension * 0.85);
+      quality = Math.max(0.5, quality - 0.06);
+      full = renderToDataUrl(img, maxDimension, quality);
+      if (maxDimension <= 640 && quality <= 0.5) break;
+    }
+
+    if (full.length > MAX_FULL_CHARS) {
+      throw new Error(
+        "La fotografía es demasiado grande incluso después de comprimirla. Use una imagen más liviana."
+      );
+    }
+
+    const thumb = renderToDataUrl(img, MAX_THUMB_DIMENSION, 0.6);
+    return { full, thumb };
+  }
+
   // -------------------- Validación --------------------
   function validate(values) {
     const errors = {};
@@ -280,15 +344,16 @@
       return;
     }
 
-    const formData = new FormData();
-    Object.entries(values).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
-    formData.append("foto", selectedFile);
-
     setLoading(true);
     try {
-      const response = await window.api.createReport(formData);
+      const { full, thumb } = await buildImagePayload(selectedFile);
+
+      const response = await window.api.createReport({
+        ...values,
+        fotoBase64: full,
+        fotoThumbBase64: thumb,
+      });
+
       const folio = response?.data?.folio || "Registrado";
       showSuccess(folio);
     } catch (error) {
@@ -296,9 +361,7 @@
         applyErrors(error.errors);
       }
       showAlert(
-        error.status === 0
-          ? error.message
-          : error.message || "No se pudo registrar el reporte. Intente de nuevo."
+        error.message || "No se pudo registrar el reporte. Intente de nuevo."
       );
       window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
